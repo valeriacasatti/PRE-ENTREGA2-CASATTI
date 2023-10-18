@@ -6,7 +6,7 @@ import { Server } from "socket.io";
 import { viewsRouter } from "./routes/views.routes.js";
 import { productsRouter } from "./routes/products.routes.js";
 import { cartsRouter } from "./routes/carts.routes.js";
-import { chatsService, productsService } from "./dao/index.js";
+import { cartsService, chatsService, productsService } from "./dao/index.js";
 import { chatsRouter } from "./routes/chat.routes.js";
 import { connectDB } from "./config/dbConnection.js";
 
@@ -35,6 +35,7 @@ app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/chats", chatsRouter);
 
+//PRODUCTS
 io.on("connection", async (socket) => {
   try {
     console.log("client connected");
@@ -108,6 +109,17 @@ io.on("connection", async (socket) => {
         console.log(error);
       }
     });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+//CART
+io.on("connection", async (socket) => {
+  try {
+    console.log("anda");
+    const cart = await cartsService.getCarts();
+    socket.emit("products", cart);
   } catch (error) {
     console.log(error);
   }

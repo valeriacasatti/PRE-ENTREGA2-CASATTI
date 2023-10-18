@@ -8,7 +8,7 @@ export class CartsManagerMongo {
   //get carts
   async getCarts() {
     try {
-      const result = await this.model.find();
+      const result = await this.model.find().lean();
       return result;
     } catch (error) {
       console.log(`get carts error: ${error.message}`);
@@ -31,8 +31,10 @@ export class CartsManagerMongo {
   //get cart by ID
   async getCartById(id) {
     try {
-      const result = await this.model.findById(id);
-      // .populate("products.productId");
+      const result = await this.model
+        .findById(id)
+        .populate("products.productId")
+        .lean();
       if (!result) {
         throw new Error("cart does not exist");
       } else {
@@ -43,22 +45,6 @@ export class CartsManagerMongo {
       throw new Error(`get cart by ID error: ${error.message}`);
     }
   }
-
-  // async updateCart(id, updatedContent) {
-  //   try {
-  //     const result = await this.model.findByIdAndUpdate(id, updatedContent, {
-  //       new: true,
-  //     });
-  //     if (!result) {
-  //       throw new Error("cart not found");
-  //     } else {
-  //       return result;
-  //     }
-  //   } catch (error) {
-  //     console.log(`update cart error: ${error.message}`);
-  //     throw new Error(`update cart error: ${error.message}`);
-  //   }
-  // }
 
   //delete cart
   async deleteCart(id) {
@@ -80,7 +66,6 @@ export class CartsManagerMongo {
     try {
       //verificar si el cart existe
       const cart = await this.getCartById(cid);
-
       if (cart) {
         //verificar si el product existe en el cart
         const product = cart.products.find(
@@ -111,12 +96,13 @@ export class CartsManagerMongo {
   async deleteProductCart(cid, pid) {
     try {
       const cart = await this.getCartById(cid);
+
       const product = cart.products.find(
         (product) => product.productId._id == pid
       );
       if (product) {
         const newProducts = cart.products.filter((product) => {
-          product.productId._id != pid;
+          return product.productId._id != pid;
         });
         cart.products = newProducts;
         const result = await this.model.findByIdAndUpdate(cid, cart, {

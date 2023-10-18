@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { productsService } from "../dao/index.js";
+import { cartsService } from "../dao/index.js";
 
 const router = Router();
 
@@ -59,8 +60,18 @@ router.get("/chat", (req, res) => {
 });
 
 //cart
-router.get("/cart", (req, res) => {
-  res.render("cart", { style: "cart.css" });
+router.get("/cart", async (req, res) => {
+  try {
+    const cid = "65259c66629d0fc68ead263e";
+    const cart = await cartsService.getCartById(cid);
+    if (!cart) {
+      return res.render("cart not found");
+    } else {
+      res.render("cart", { products: cart.products, style: "cart.css" });
+    }
+  } catch (error) {
+    res.render({ error: error.message });
+  }
 });
 
 export { router as viewsRouter };
